@@ -71,33 +71,34 @@ app.get('/customer/information/', async (req, res) => {
 });
 
 const getCustInfo = async () => {
-  const QUERY = `SELECT name, gender, email,₩₩ title, content FROM userinfo NATURAL JOIN board`;
+  const QUERY = `SELECT id, name, gender, email, title, content FROM userinfo NATURAL JOIN board`;
   const [rows, fileds] = await promisePool.query(QUERY);
   return rows;
 }
 
 
 // ****** Update data ******
-app.get('/customer/change/:userid', async (req, res) => {
-  const userId = req.params.userid;
+app.post('/customer/update/', async (req, res) => {
+  const body = req.body;
+  console.log(body);
   try {
-    const result = await modifyByUserid(userId);
+    const result = await modifyByUserid(body);
     res.json(result);
   } catch (error) {
     throw error;
   }
 });
 
-const modifyByUserid = async (userId) => {
-  const QUERY = `UPDATE board SET content ='React Developer' WHERE userid = ?`;
-  const [rows] = await promisePool.query(QUERY, userId);
+const modifyByUserid = async (body) => {
+  const userid = body.id;
+  const content = body.content;
+  const QUERY = `UPDATE board SET content =? WHERE userid = ?`;
+  const [rows] = await promisePool.query(QUERY, [content, userid]);
   return rows;
 };
 
-// ****** Insert data ******
 
-// const bodyParser = require('body-parser');
-// app.use(bodyParser.urlencoded({ extended: false }));
+// ****** Insert data ******
 
 app.post('/customer/save/', async (req, res) => {
   const body = req.body;
@@ -114,4 +115,25 @@ const saveDataByUserid = async (body) => {
   const QUERY = 'INSERT INTO userinfo VALUES(?,?,?,?,?)';
   const [rows] = await promisePool.query(QUERY, [body.id, body.passwd, body.name, body.gender, body.email]);
   return rows;
+}
+
+
+
+// ****** delete data ******
+
+app.get('/customer/delete/:id', async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  try {
+    const result = await deleteContent(id);
+    res.json(result);
+  } catch (error) {
+    throw error;
+  }
+});
+
+const deleteContent = async (id) => {
+  const QUERY = `DELETE FROM board WHERE id=?`;
+  const [rows] = await promisePool.query(QUERY, id);
+  return rows
 }
